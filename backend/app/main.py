@@ -31,13 +31,34 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
-# Cross-Origin Resource Sharing
+# Cross-Origin Resource Sharing (CORS) for local frontend communication
+default_local_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://0.0.0.0:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+]
+
+allowed_origins = list(default_local_origins)
+if hasattr(settings, "CORS_ORIGINS") and settings.CORS_ORIGINS:
+    for origin in settings.CORS_ORIGINS:
+        if origin and origin not in allowed_origins:
+            allowed_origins.append(origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=allowed_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$",
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=600,
 )
 
 # Mount API Routers

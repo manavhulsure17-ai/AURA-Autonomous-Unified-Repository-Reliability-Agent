@@ -4,11 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev": "./scripts/dev.sh",
+    "dev:frontend": "vite --port=3000 --host=0.0.0.0",
+    "dev:backend": "python3 -m uvicorn backend.main:app --host 127.0.0.1 --port 8081",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test:backend": "python3 -m pytest tests/backend backend/tests"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

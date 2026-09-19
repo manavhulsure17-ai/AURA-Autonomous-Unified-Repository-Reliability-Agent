@@ -22,6 +22,20 @@ export const Header: React.FC<HeaderProps> = ({
   onThemeToggled,
 }) => {
   const { resolvedTheme, toggleTheme } = useTheme();
+  const [backendStatus, setBackendStatus] = React.useState<{ online: boolean; engine?: string }>({
+    online: false,
+  });
+
+  React.useEffect(() => {
+    fetch('/health')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.status === 'healthy') {
+          setBackendStatus({ online: true, engine: data.engine || 'sqlite' });
+        }
+      })
+      .catch(() => setBackendStatus({ online: false }));
+  }, []);
 
   const handleToggleTheme = () => {
     toggleTheme();
@@ -90,7 +104,28 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Action icons */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          {/* Live FastAPI & SQLite Status */}
+          <a
+            href="/docs"
+            target="_blank"
+            rel="noreferrer"
+            className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono border transition-all cursor-pointer ${
+              backendStatus.online
+                ? 'bg-[#00f0ff]/10 border-[#00f0ff]/40 text-[#00f0ff] hover:bg-[#00f0ff]/20 shadow-[0_0_8px_rgba(0,240,255,0.2)]'
+                : 'bg-[#242a36] border-[#3b494b]/40 text-[#849495] hover:text-[#dde2f3]'
+            }`}
+            title="FastAPI + SQLite Backend Status — Click to open Swagger UI /docs"
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                backendStatus.online ? 'bg-[#00f0ff] shadow-[0_0_6px_#00f0ff] animate-pulse' : 'bg-[#ffb4ab]'
+              }`}
+            ></span>
+            <span className="font-semibold">{backendStatus.online ? 'FastAPI + SQLite' : 'Backend Starting...'}</span>
+            <span className="text-[10px] uppercase opacity-75">API Docs &nearr;</span>
+          </a>
+
           {/* Theme mode toggle: Light / Dark */}
           <button
             onClick={handleToggleTheme}

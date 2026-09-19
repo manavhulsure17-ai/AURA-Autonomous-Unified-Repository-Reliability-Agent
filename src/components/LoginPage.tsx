@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AuthUser } from '../types';
-import { loginUser, registerUser, DEFAULT_USERS } from '../utils/authStorage';
+import { loginUser, registerUser } from '../utils/authStorage';
 import { useTheme } from '../context/ThemeContext';
 
 interface LoginPageProps {
@@ -91,14 +91,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     } else if (e.key === 'Enter') {
       handleSubmit();
     }
-  };
-
-  const handleQuickFill = (demoEmail: string, demoPin: string) => {
-    setEmail(demoEmail);
-    setPinDigits(demoPin.split(''));
-    setMode('signin');
-    setErrorMessage(null);
-    setSuccessMessage('Credentials loaded. Press Sign In to continue.');
   };
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -352,44 +344,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             )}
           </button>
         </form>
-
-        {/* Delicate divider */}
-        <div className="my-5 flex items-center gap-3">
-          <div className="h-px bg-[#1f2838] flex-1"></div>
-          <span className="text-[10px] uppercase font-mono tracking-wider text-[#637287]">
-            Quick Access Demo
-          </span>
-          <div className="h-px bg-[#1f2838] flex-1"></div>
-        </div>
-
-        {/* Quick Demo Pre-seeded accounts */}
-        <div className="space-y-1.5">
-          <div className="text-[11px] text-[#8494a5] mb-1 text-center">
-            Click to autofill pre-configured test credentials:
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {DEFAULT_USERS.map((demo) => (
-              <button
-                key={demo.email}
-                type="button"
-                onClick={() => handleQuickFill(demo.email, demo.pin)}
-                className="px-2.5 py-1.5 rounded-lg bg-[#0b111c] hover:bg-[#151e2d] border border-[#1e2738] hover:border-[#00f0ff]/30 text-left transition-all flex flex-col group cursor-pointer"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-[#dde2f3] group-hover:text-[#00f0ff] truncate max-w-[130px]">
-                    {demo.email}
-                  </span>
-                  <span className="text-[9px] font-mono px-1 rounded bg-[#00f0ff]/10 text-[#00f0ff] border border-[#00f0ff]/20">
-                    PIN: {demo.pin}
-                  </span>
-                </div>
-                <span className="text-[9px] text-[#6b7b92] font-mono">
-                  {demo.role || 'Operator'}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Direct guest pass */}
         <div className="mt-5 text-center">

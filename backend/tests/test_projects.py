@@ -1,4 +1,7 @@
-"""Unit tests for Projects API."""
+"""Unit tests for Projects API verifying SQLite database interaction."""
+
+from models import Project
+
 
 def test_read_root(client):
     response = client.get("/")
@@ -16,7 +19,7 @@ def test_health_check(client):
     assert data["database"] == "connected"
 
 
-def test_create_and_get_project(client):
+def test_create_and_get_project(client, db_session):
     payload = {
         "slug": "billing-service",
         "name": "Billing Microservice",
@@ -31,18 +34,25 @@ def test_create_and_get_project(client):
     assert created_data["name"] == "Billing Microservice"
     project_id = created_data["id"]
 
-    # Fetch by ID
+    # Direct SQLite assertion: record was persisted into SQLite database
+    db_proj = db_session.query(Project).filter_by(id=project_id).first()
+    assert db_proj is not None
+    assert db_proj.slug == "billing-service"
+    assert db_proj.name == "Billing Microservice"
+    assert db_proj.tier == "tier-1-mission-critical"
+
+    # Fetch by ID via API
     get_res = client.get(f"/api/v1/projects/{project_id}")
     assert get_res.status_code == 200
     assert get_res.json()["slug"] == "billing-service"
 
-    # Fetch by slug
+    # Fetch by slug via API
     slug_res = client.get("/api/v1/projects/by-slug/billing-service")
     assert slug_res.status_code == 200
     assert slug_res.json()["name"] == "Billing Microservice"
 
 
-def test_duplicate_project_slug_rejected(client):
+def test_duplicate_project_slug_rejected(client, db_session):
     payload = {
         "slug": "duplicate-test",
         "name": "Original",
@@ -54,8 +64,12 @@ def test_duplicate_project_slug_rejected(client):
     assert r2.status_code == 400
     assert "already exists" in r2.json()["detail"]
 
+    # Direct SQLite assertion: only 1 project exists in SQLite
+    count = db_session.query(Project).filter_by(slug="duplicate-test").count()
+    assert count == 1
 
-def test_update_and_delete_project(client):
+
+def test_update_and_delete_project(client, db_session):
     payload = {
         "slug": "temp-project",
         "name": "Temporary Project",
@@ -63,15 +77,28 @@ def test_update_and_delete_project(client):
     create_res = client.post("/api/v1/projects", json=payload)
     p_id = create_res.json()["id"]
 
-    # Update
+    # Direct SQLite assertion: project exists initially
+    assert db_session.query(Project).filter_by(id=p_id).first() is not None
+
+    # Update via API
     update_res = client.put(f"/api/v1/projects/{p_id}", json={"name": "Renamed Temp Project"})
     assert update_res.status_code == 200
     assert update_res.json()["name"] == "Renamed Temp Project"
 
-    # Delete
+    # Direct SQLite assertion: update persisted to SQLite
+    db_session.expire_all()
+    updated_in_db = db_session.query(Project).filter_by(id=p_id).first()
+    assert updated_in_db.name == "Renamed Temp Project"
+
+    # Delete via API
     del_res = client.delete(f"/api/v1/projects/{p_id}")
     assert del_res.status_code == 204
 
-    # Verify deleted
+    # Direct SQLite assertion: deleted from SQLite table
+    db_session.expire_all()
+    assert db_session.query(Project).filter_by(id=p_id).first() is None
+
+    # Verify deleted via API
     not_found = client.get(f"/api/v1/projects/{p_id}")
     assert not_found.status_code == 404
+

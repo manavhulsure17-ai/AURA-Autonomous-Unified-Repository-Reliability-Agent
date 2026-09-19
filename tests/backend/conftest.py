@@ -1,4 +1,13 @@
-"""Pytest test configuration and fixtures for SQLite database interaction testing."""
+"""Pytest configuration and fixtures for backend SQLite and FastAPI CRUD tests.
+
+Located in tests/backend/conftest.py.
+Configures:
+- SQLite test engine with StaticPool (sharing single in-memory database across connections)
+- PRAGMA foreign_keys=ON listener
+- Clean schema creation per test function
+- FastAPI TestClient fixture with get_db dependency override
+- Direct db_session fixture for database state verification
+"""
 
 import os
 import sys
@@ -9,7 +18,8 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 
 # Ensure backend directory is in sys.path
-BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BACKEND_DIR = os.path.join(ROOT_DIR, "backend")
 if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
@@ -17,7 +27,7 @@ from database import Base, get_db
 from models import Project, RepositoryMetadata
 from main import app
 
-# Isolated in-memory SQLite database for testing with StaticPool so all connections share the memory DB
+# Isolated in-memory SQLite database for testing with StaticPool
 TEST_DATABASE_URL = "sqlite:///:memory:"
 test_engine = create_engine(
     TEST_DATABASE_URL,
@@ -25,7 +35,7 @@ test_engine = create_engine(
     poolclass=StaticPool,
 )
 
-# Enable foreign keys on SQLite test engine
+# Enforce foreign key constraints in SQLite
 @event.listens_for(test_engine, "connect")
 def _set_test_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
@@ -78,4 +88,3 @@ def client():
 def sqlite_engine():
     """Provide reference to the test SQLite engine for direct SQL schema inspections."""
     return test_engine
-
