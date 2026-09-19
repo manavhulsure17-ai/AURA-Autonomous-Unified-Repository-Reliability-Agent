@@ -1,0 +1,6 @@
+{
+  "name": "AURA - Autonomous AI Software Engineering Platform",
+  "description": "Autonomous Unified Repository & Reliability Agent - Understand, Secure, Improve, Test, and Heal with Multi-Agent Orchestration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

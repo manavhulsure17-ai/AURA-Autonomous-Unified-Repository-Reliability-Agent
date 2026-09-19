@@ -1,0 +1,13 @@
+[
+  "backend/tests/test_main_routes.py::test_main_list_and_create_project",
+  "backend/tests/test_main_routes.py::test_main_register_repository_metadata",
+  "backend/tests/test_main_routes.py::test_main_root_and_health",
+  "backend/tests/test_main_routes.py::test_register_repository_invalid_project",
+  "backend/tests/test_projects.py::test_create_and_get_project",
+  "backend/tests/test_projects.py::test_duplicate_project_slug_rejected",
+  "backend/tests/test_projects.py::test_health_check",
+  "backend/tests/test_projects.py::test_read_root",
+  "backend/tests/test_projects.py::test_update_and_delete_project",
+  "backend/tests/test_repositories.py::test_create_and_query_repository",
+  "backend/tests/test_repositories.py::test_repository_invalid_project_id"
+]
